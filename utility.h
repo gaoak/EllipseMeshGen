@@ -16,7 +16,7 @@ int wake_rect(double downslen, int layers, int idor, int iupr, double **x, doubl
 int FEgen_rec(int Np0, int layers, int is3, int ie3, int Np2, int layer2, double **x2, double **y2, double **point, int **edge, int **cell);
 int FEgen_cir(int Np0, int layers, double **x, double **y, double **point, int nspoint, int **edge, int nsedge, int **cell);
 int outFE(int npoint, double **point, int nedge, int **edge, int curvedpoints, int ncedge, int *cedge, double ***cc, int ncell, int **cell, ofstream &outxml);
-int outCOMPO(int Np0, int layers, int is3, int ie3, int Np2, int layer2, int layer2plus, int **cell, ofstream &outxml);
+int outCOMPO(int Np0, int layers, int **cell, ofstream &outxml);
 int coord_trans(int Np0, int layers, double alpha, double **x, double **y);
 int cedge_trans(int ncedge, int curvedpoints, double alpha, double ***cc);
 inline double fStretch(double mu, double mu0)

@@ -102,7 +102,7 @@ int cirbl_pointsgen(double rc, int Np0, int Nsg, int Ns0, double R0, double firs
         cc[i] = new double*[curvedpoints];
         for(int j=0; j<curvedpoints; j++) cc[i][j] = new double[3];
     }
-    for(int i=0; i<10; i++)
+    for(int i=0; i<min(10,layers-1); i++)
     {
         for(int j=0; j<Np0; j++)
         {
@@ -141,7 +141,7 @@ int ellbl_pointsgen(double ella, double ellb, int Np0, int Nsg, int Ns0, double 
     double ellratio = ellb/ella;
     double theta, mu, mu0, *thetas, firstmu;
     thetas = new double[Np0+1];
-    int npl = 2+2+2, npr = 12+2;
+    int npl = 24, npr = 6;
     int Npt = Np0 - npr - npl;
     double ds = 2.*M_PI/Nsg, da = (M_PI_2 - ds*Ns0)/(Npt - 4.*Ns0)*4.;//smooth, angle
     deltaTheta = ds;
@@ -169,11 +169,10 @@ int ellbl_pointsgen(double ella, double ellb, int Np0, int Nsg, int Ns0, double 
         thetas[Npt/2 + j] = thetas[Npt/2 + j -1] + dt;
         thetas[Npt - j] = thetas[Npt - j + 1] - dt;
     }
-    refinethetas(Npt, npl-2, M_PI, 0.25, thetas); Npt += npl-2;
-    refinethetas(Npt, 2, M_PI, 0.1, thetas); Npt += 2;
-    refinethetas(Npt, npr-2, 2.*M_PI, M_PI/3.5, thetas); Npt += npr-2;
-    refinethetas(Npt, 2, 2.*M_PI, 0.1, thetas); Npt += 2;
-    //refinethetas(Npt, Np0 - Npt, 1.5*M_PI, M_PI/3, thetas);
+    refinethetas(Npt, npr, 2.*M_PI, 0.1, thetas); Npt += npr;
+    int ex = 18;
+    refinethetas(Npt, npl-ex, M_PI, M_PI/3.5, thetas); Npt += npl-ex;
+    refinethetas(Npt, ex,     M_PI, M_PI/12. , thetas); Npt += ex;
     double radius = 0.;
     //calculate mesh numbers
     layers = 0;
@@ -409,7 +408,7 @@ int wake_rect(double downslen, int layers, int idor, int iupr, double **x, doubl
     }
     double ysmr = y[layers - 1][is3r], yspr = y[layers - 1][ie3r];
     //double yemr = -(ie3r - is3r)*hflowe*0.30, yepr = (ie3r - is3r)*hflowe*0.30;
-    double yemr = ysmr*1.1, yepr = yspr*1.1;
+    double yemr = ysmr*1.3, yepr = yspr*1.3;
     for(int j=is3; j<=ie3; j++)
     {
         double yept, yemt, yspt, ysmt;
@@ -623,7 +622,7 @@ int outFE(int npoint, double **point, int nedge, int **edge, int curvedpoints, i
     outxml << "        </CURVED>" << "\n";
     return 0;
 }
-int outCOMPO(int Np0, int layers, int is3, int ie3, int Np2, int layer2, int layer2plus, int **cell, ofstream &outxml)
+int outCOMPO(int Np0, int layers, int **cell, ofstream &outxml)
 {
     //
     //composite
@@ -635,47 +634,19 @@ int outCOMPO(int Np0, int layers, int is3, int ie3, int Np2, int layer2, int lay
     outxml << cell[Np0-1][0] << "] </C>" << "\n";
     //side boundary
     outxml << "            <C ID=\"2\"> E[";
-    for(int j=0; j<Np0; j++)
+    for(int j=0; j<Np0-1; j++)
     {
-        if(j>=is3 && j<ie3) continue;
         outxml << cell[(layers-2)*Np0+j][2] << ",";
     }
-    for(int i=0; i<layer2; i++)
-    {
-        outxml << cell[(layers-1)*Np0+i*(Np2-1)][1] << ",";
-    }
-    for(int i=0; i<layer2-1; i++)
-    {
-        outxml << cell[(layers-1)*Np0+(1+i)*(Np2-1)-1][3] << ",";
-    }
-    outxml << cell[(layers-1)*Np0+layer2*(Np2-1)-1][3] << "] </C>" << "\n";
-    //rear side boundary
-    outxml << "            <C ID=\"3\"> E[";
-    for(int i=layer2; i<layer2+layer2plus; i++)
-    {
-        outxml << cell[(layers-1)*Np0+i*(Np2-1)][1] << ",";
-    }
-    for(int i=layer2; i<layer2+layer2plus-1; i++)
-    {
-        outxml << cell[(layers-1)*Np0+(1+i)*(Np2-1)-1][3] << ",";
-    }
-    outxml << cell[(layers-1)*Np0+(layer2+layer2plus)*(Np2-1)-1][3] << "] </C>" << "\n";
-    //outflow boundary
-    outxml << "            <C ID=\"4\"> E[";
-    for(int i=0; i<Np2-2; i++)
-    {
-        outxml << cell[(layers-1)*Np0+(layer2+layer2plus-1)*(Np2-1) + i][2] << ",";
-    }
-    outxml << cell[(layers-1)*Np0+(layer2+layer2plus)*(Np2-1)-1][2] << "] </C>" << "\n";
+    outxml << cell[(layers-2)*Np0+Np0-1][2] << "] </C>" << "\n";
     //the first layer cells near wall
-    outxml << "            <C ID=\"5\"> Q[" << 0 << "-" << (layers-1)*Np0 + (layer2+layer2plus)*(Np2-1)-1 << "] </C>" << "\n";
+    outxml << "            <C ID=\"3\"> Q[" << 0 << "-" << (layers-1)*Np0 -1 << "] </C>" << "\n";
     outxml << "        </COMPOSITE>" << "\n";
-    outxml << "        <DOMAIN> C[5] </DOMAIN>" << "\n";
+    outxml << "        <DOMAIN> C[3] </DOMAIN>" << "\n";
     outxml << "    </GEOMETRY>" << "\n";
     //expansion
     outxml << "    <EXPANSIONS>" << "\n";
-    //outxml << "        <E COMPOSITE=\"C[5]\" NUMMODES=\"11\" TYPE=\"MODIFIED\" FIELDS=\"u,v,p\" />" << "\n";
-    outxml << "        <E COMPOSITE=\"C[5]\" NUMMODES=\"10, 10\" BASISTYPE=\"Modified_A,Modified_A\" POINTSTYPE=\"GaussLobattoLegendre,GaussLobattoLegendre\" NUMPOINTS=\"12,12\" FIELDS=\"u,v,p\" />" << "\n";
+    outxml << "        <E COMPOSITE=\"C[3]\" NUMMODES=\"4, 4\" BASISTYPE=\"Modified_A,Modified_A\" POINTSTYPE=\"GaussLobattoLegendre,GaussLobattoLegendre\" NUMPOINTS=\"5,5\" FIELDS=\"u,v,p\" />" << "\n";
     outxml << "    </EXPANSIONS>" << "\n";
     outxml << "</NEKTAR>" << "\n";
     return 0;

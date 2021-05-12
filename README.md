@@ -1,1 +1,1 @@
-this generates mesh around an ellipse
+this generates mesh around an ellipse; circle outline
