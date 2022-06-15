@@ -67,11 +67,16 @@ int cirbl_pointsgen(double rc, int Np0, int Nsg, int Ns0, double R0, double firs
     layers = 0;
     double rs[2000];
     radius = rc; rs[layers] = radius;
+    double height = firstH;
     while(radius<R0)
     {
         layers++;
         double finalH = radius*deltaTheta2;
-        radius += meshh(radius-rc, firstH, finalH); rs[layers] = radius;
+        height = height * 1.3;
+        if (height>finalH) {
+            height = finalH;
+        }
+        radius += height; rs[layers] = radius;
     }
     layers+=2;//the last two layers is divied into three
     rs[layers-1] = R0;

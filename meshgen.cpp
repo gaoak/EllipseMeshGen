@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <cmath>
 #include "utility.h"
-#define ELLIPSE
+//#define ELLIPSE
 #define CYLINDER
 using namespace std;
 
@@ -71,8 +71,8 @@ int main(int argc, char* argv[])
     coord_trans(Np0, layer0, alpha, x0, y0);
     cedge_trans(ncedge, curvedpoints, alpha, cc);
 #else
-    Np0 = 60;
-    firstH = 0.015;
+    Np0 = 104;
+    firstH = 2.2E-4;
     double rc = 0.5;
     cirbl_pointsgen(rc, Np0, Np0-10, 11, R0, firstH, curvedpoints, deltaTheta, layer0, x0, y0, ncedge, cedge, cc);
 #endif
